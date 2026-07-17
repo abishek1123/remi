@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "7698117090",
+    "project_id": "personal-agent-app-a630b",
+    "storage_bucket": "personal-agent-app-a630b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:7698117090:android:4b44986e2a6682eeec49bb",
+        "android_client_info": {
+          "package_name": "com.abishek.remi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDG0xAxj1McHZEnd6WXVlXDLiN92Qil9u8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:7698117090:android:960bc9fff71c7daaec49bb",
+        "android_client_info": {
+          "package_name": "com.example.ai_assistant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDG0xAxj1McHZEnd6WXVlXDLiN92Qil9u8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
