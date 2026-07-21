@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
@@ -82,17 +81,30 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         throw Exception('Upload failed: ${response.statusCode} ${response.body}');
       }
 
-      final data = jsonDecode(response.body);
       setState(() {
         _statusMessage =
-            'Uploaded! ${data['chunks_created']} chunks processed.';
+            'Uploaded! Processing in the background — it\'ll be ready shortly.';
       });
 
       await _fetchDocuments();
+      _pollForReady();
     } catch (e) {
       setState(() => _statusMessage = 'Error: $e');
     } finally {
       setState(() => _uploading = false);
+    }
+  }
+
+  // Documents now embed asynchronously (status: processing -> ready/failed),
+  // so refresh a few times to reflect the flip without a manual pull.
+  Future<void> _pollForReady() async {
+    for (var i = 0; i < 10; i++) {
+      await Future.delayed(const Duration(seconds: 3));
+      if (!mounted) return;
+      await _fetchDocuments();
+      final anyProcessing =
+          _documents.any((d) => d['status'] == 'processing');
+      if (!anyProcessing) return;
     }
   }
 
