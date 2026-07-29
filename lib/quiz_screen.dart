@@ -55,6 +55,7 @@ class _QuizScreenState extends State<QuizScreen> {
   int? _selected;
   bool _answered = false;
   int _score = 0;
+  int _numQuestions = 10;
 
   @override
   void initState() {
@@ -84,7 +85,7 @@ class _QuizScreenState extends State<QuizScreen> {
         body: jsonEncode({
           'user_id': userId,
           'document_id': widget.documentId,
-          'num_questions': 10,
+          'num_questions': _numQuestions,
         }),
       );
 
@@ -357,11 +358,35 @@ class _QuizScreenState extends State<QuizScreen> {
             Text('$pct% correct',
                 style: const TextStyle(color: kTextSecondary, fontSize: 18)),
             const SizedBox(height: 32),
+            const Text('Questions per quiz',
+                style: TextStyle(color: kTextSecondary, fontSize: 13)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              alignment: WrapAlignment.center,
+              children: [10, 20, 30].map((count) {
+                final selected = _numQuestions == count;
+                return ChoiceChip(
+                  label: Text('$count'),
+                  selected: selected,
+                  onSelected: (_) => setState(() => _numQuestions = count),
+                  showCheckmark: false,
+                  backgroundColor: kSurface,
+                  selectedColor: kRed,
+                  labelStyle: TextStyle(
+                    color: selected ? Colors.white : kTextSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  side: BorderSide(color: selected ? kRed : kSurfaceLight),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _generate,
-                child: const Text('New quiz'),
+                child: Text('New quiz ($_numQuestions questions)'),
               ),
             ),
             const SizedBox(height: 12),
