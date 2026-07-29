@@ -11,6 +11,7 @@ class QuizQuestion {
   final int correctIndex;
   final String topic;
   final String explanation;
+  final String source; // 'notes' or 'related'
 
   QuizQuestion({
     required this.question,
@@ -18,6 +19,7 @@ class QuizQuestion {
     required this.correctIndex,
     required this.topic,
     required this.explanation,
+    required this.source,
   });
 
   factory QuizQuestion.fromJson(Map<String, dynamic> j) => QuizQuestion(
@@ -26,6 +28,7 @@ class QuizQuestion {
         correctIndex: j['correct_index'] ?? 0,
         topic: j['topic'] ?? 'General',
         explanation: j['explanation'] ?? '',
+        source: j['source'] ?? 'notes',
       );
 }
 
@@ -149,6 +152,29 @@ class _QuizScreenState extends State<QuizScreen> {
     });
   }
 
+  Widget _sourceBadge(String source) {
+    final isNotes = source == 'notes';
+    final color = isNotes ? Colors.green : const Color(0xFF4A90D9);
+    final label = isNotes ? 'From your notes' : 'Related';
+    final icon = isNotes ? Icons.description_outlined : Icons.public;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 4),
+          Text(label, style: TextStyle(color: color, fontSize: 11)),
+        ],
+      ),
+    );
+  }
+
   Color _optionColor(int i) {
     if (!_answered) return kSurface;
     final q = _questions[_index];
@@ -218,17 +244,21 @@ class _QuizScreenState extends State<QuizScreen> {
               Text('Question ${_index + 1} of ${_questions.length}',
                   style: const TextStyle(
                       color: kTextSecondary, fontWeight: FontWeight.w600)),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: kSurfaceLight,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(q.topic,
-                    style: const TextStyle(color: kRed, fontSize: 12)),
-              ),
+              _sourceBadge(q.source),
             ],
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: kSurfaceLight,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(q.topic,
+                  style: const TextStyle(color: kRed, fontSize: 12)),
+            ),
           ),
           const SizedBox(height: 8),
           LinearProgressIndicator(
