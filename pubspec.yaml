@@ -45,6 +45,13 @@ dependencies:
   shared_preferences: ^2.5.3
   google_fonts: ^6.2.1
 
+# path_provider_foundation >=2.6.0 pulls in objective_c, whose native-assets
+# build hook fails on Windows when the SDK path contains a space (this machine:
+# "C:\Users\abishek sr\..."), breaking local release builds. It's the iOS/macOS
+# implementation and unused on Android/web, so pin the last version without it.
+dependency_overrides:
+  path_provider_foundation: 2.5.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
