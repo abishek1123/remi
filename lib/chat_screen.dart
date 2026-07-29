@@ -180,57 +180,70 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _emptyState() {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.auto_awesome, color: kRed, size: 48),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                  child: Text(
-                    _greeting,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.w800),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  _greeting,
+                  style: const TextStyle(
+                      fontSize: 26, fontWeight: FontWeight.w600, height: 1.15),
+                ),
+              ),
+              IconButton(
+                onPressed: _editGreeting,
+                icon: const Icon(Icons.edit_outlined,
+                    size: 18, color: kTextSecondary),
+                tooltip: 'Edit greeting',
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+          const Text(
+            'TRY ASKING',
+            style: TextStyle(
+              fontSize: 11,
+              color: kTextSecondary,
+              letterSpacing: 1.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ..._examplePrompts.map(
+            (p) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: InkWell(
+                onTap: () => _sendMessageText(p),
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 15),
+                  decoration: BoxDecoration(
+                    color: kSurface,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: kDivider),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.auto_awesome, size: 15, color: kAccent),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(p,
+                            style: const TextStyle(
+                                fontSize: 14, color: kTextPrimary)),
+                      ),
+                    ],
                   ),
                 ),
-                IconButton(
-                  onPressed: _editGreeting,
-                  icon: const Icon(Icons.edit_outlined,
-                      size: 18, color: kTextSecondary),
-                  tooltip: 'Edit greeting',
-                ),
-              ],
+              ),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'Add tasks, ask your documents, or just talk.',
-              style: TextStyle(color: kTextSecondary),
-            ),
-            const SizedBox(height: 24),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              alignment: WrapAlignment.center,
-              children: _examplePrompts
-                  .map(
-                    (p) => ActionChip(
-                      label: Text(p, style: const TextStyle(fontSize: 12)),
-                      backgroundColor: kSurface,
-                      side: const BorderSide(color: kSurfaceLight),
-                      labelStyle: const TextStyle(color: kTextPrimary),
-                      onPressed: () => _sendMessageText(p),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -241,10 +254,10 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         title: const Text('REMI',
             style: TextStyle(
-              color: kRed,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 2,
-              fontSize: 22,
+              color: kTextPrimary,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 4,
+              fontSize: 18,
             )),
         actions: [
           IconButton(
@@ -275,20 +288,36 @@ class _ChatScreenState extends State<ChatScreen> {
                             : CrossAxisAlignment.start,
                         children: [
                           Container(
-                            margin: const EdgeInsets.only(top: 4),
+                            margin: const EdgeInsets.only(top: 6),
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 14, vertical: 10),
                             constraints: BoxConstraints(
                               maxWidth:
-                                  MediaQuery.of(context).size.width * 0.75,
+                                  MediaQuery.of(context).size.width * 0.82,
                             ),
                             decoration: BoxDecoration(
-                              color: isUser ? kRed : kSurface,
-                              borderRadius: BorderRadius.circular(16),
+                              gradient: isUser
+                                  ? const LinearGradient(
+                                      colors: [kAccent600, kAccent700],
+                                    )
+                                  : null,
+                              color: isUser ? null : kSurface,
+                              border: isUser
+                                  ? null
+                                  : Border.all(color: kDivider),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(isUser ? 16 : 4),
+                                topRight: const Radius.circular(16),
+                                bottomLeft: const Radius.circular(16),
+                                bottomRight: Radius.circular(isUser ? 4 : 16),
+                              ),
                             ),
                             child: Text(
                               msg.content,
-                              style: const TextStyle(color: kTextPrimary),
+                              style: TextStyle(
+                                color: isUser ? kAccent100 : kTextPrimary,
+                                height: 1.5,
+                              ),
                             ),
                           ),
                           if (!isUser)
@@ -296,9 +325,19 @@ class _ChatScreenState extends State<ChatScreen> {
                               onTap: () => _tts.speak(msg.content),
                               borderRadius: BorderRadius.circular(20),
                               child: const Padding(
-                                padding: EdgeInsets.all(6),
-                                child: Icon(Icons.volume_up_outlined,
-                                    size: 18, color: kTextSecondary),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 4),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.volume_up_outlined,
+                                        size: 15, color: kAccentText),
+                                    SizedBox(width: 4),
+                                    Text('Listen',
+                                        style: TextStyle(
+                                            fontSize: 11, color: kAccentText)),
+                                  ],
+                                ),
                               ),
                             ),
                         ],

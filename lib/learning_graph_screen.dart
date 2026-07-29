@@ -42,9 +42,9 @@ class LearningGraphScreenState extends State<LearningGraphScreen> {
   }
 
   Color _masteryColor(double m) {
-    if (m >= 0.8) return Colors.green;
-    if (m >= 0.5) return Colors.orange;
-    return kRed;
+    if (m >= 0.8) return kSuccess;
+    if (m >= 0.5) return kWarning;
+    return kDanger;
   }
 
   @override
@@ -72,23 +72,85 @@ class LearningGraphScreenState extends State<LearningGraphScreen> {
               : RefreshIndicator(
                   onRefresh: _load,
                   child: ListView(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(18),
                     children: [
+                      _summaryCard(),
+                      const SizedBox(height: 24),
                       const Text(
-                        'Topics to review',
+                        'BY TOPIC — WEAKEST FIRST',
                         style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w800),
+                            fontSize: 11,
+                            color: kTextSecondary,
+                            letterSpacing: 1.2,
+                            fontWeight: FontWeight.w600),
                       ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Weakest first — focus here next.',
-                        style: TextStyle(color: kTextSecondary, fontSize: 13),
-                      ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       ..._topics.map(_topicTile),
                     ],
                   ),
                 ),
+    );
+  }
+
+  Widget _summaryCard() {
+    // Overall mastery = total correct / total answered across topics.
+    num correctSum = 0, totalSum = 0;
+    for (final t in _topics) {
+      correctSum += (t['correct'] as num?) ?? 0;
+      totalSum += (t['total'] as num?) ?? 0;
+    }
+    final overall = totalSum == 0 ? 0.0 : correctSum / totalSum;
+    final pct = (overall * 100).round();
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: kSurface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: kDivider),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 88,
+            height: 88,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 88,
+                  height: 88,
+                  child: CircularProgressIndicator(
+                    value: overall,
+                    strokeWidth: 8,
+                    backgroundColor: kSurfaceLight,
+                    valueColor: const AlwaysStoppedAnimation(kAccent),
+                  ),
+                ),
+                Text('$pct%',
+                    style: const TextStyle(
+                        fontSize: 22, fontWeight: FontWeight.w700)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 18),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Overall mastery',
+                    style: TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 4),
+                Text(
+                  '${_topics.length} topic${_topics.length == 1 ? '' : 's'} tracked. Focus on your weakest first.',
+                  style: const TextStyle(
+                      color: kTextSecondary, fontSize: 13, height: 1.4),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

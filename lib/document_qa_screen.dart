@@ -208,17 +208,24 @@ class _DocumentQaScreenState extends State<DocumentQaScreen> {
                                   ),
                                 ),
                                 if (msg.fromDocument)
-                                  const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.verified_outlined,
-                                          size: 13, color: Colors.green),
-                                      SizedBox(width: 4),
-                                      Text('From your document',
-                                          style: TextStyle(
-                                              fontSize: 11,
-                                              color: kTextSecondary)),
-                                    ],
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: kSuccessBg,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.check_circle_outline,
+                                            size: 12, color: kSuccess),
+                                        SizedBox(width: 4),
+                                        Text('From your document',
+                                            style: TextStyle(
+                                                fontSize: 11, color: kSuccess)),
+                                      ],
+                                    ),
                                   ),
                               ],
                             ),

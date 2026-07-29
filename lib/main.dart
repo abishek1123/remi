@@ -8,9 +8,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:table_calendar/table_calendar.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'documents_screen.dart';
 import 'learning_graph_screen.dart';
 import 'theme.dart';
+import 'remi_logo.dart';
 import 'api.dart';
 
 Future<void> main() async {
@@ -115,74 +117,129 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Container(
-                padding: const EdgeInsets.all(28),
-                decoration: BoxDecoration(
-                  color: kSurface,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      'REMI',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: kRed,
-                        fontSize: 28,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _isSignUp ? 'Create your account' : 'Welcome back',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: kTextSecondary),
-                    ),
-                    const SizedBox(height: 28),
-                    TextField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(hintText: 'Email'),
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _passwordController,
-                      decoration: const InputDecoration(hintText: 'Password'),
-                      obscureText: true,
-                      onSubmitted: (_) => _submit(),
-                    ),
-                    const SizedBox(height: 24),
-                    _loading
-                        ? const Center(child: CircularProgressIndicator())
-                        : ElevatedButton(
-                            onPressed: _submit,
-                            child: Text(_isSignUp ? 'Sign Up' : 'Sign In'),
-                          ),
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: () => setState(() => _isSignUp = !_isSignUp),
-                      child: Text(_isSignUp
-                          ? 'Already have an account? Sign in'
-                          : "New here? Sign up now"),
-                    ),
-                  ],
+      body: Stack(
+        children: [
+          // radial highlight glow behind the top
+          Positioned(
+            top: -140,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 340,
+              decoration: const BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment.topCenter,
+                  radius: 0.9,
+                  colors: [Color(0x33968AE0), Colors.transparent],
                 ),
               ),
             ),
           ),
-        ),
+          Center(
+            child: SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const RemiLogo(size: 76),
+                      const SizedBox(height: 20),
+                      Text(
+                        'REMI',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          color: kTextPrimary,
+                          fontSize: 30,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 6, // ~0.2em
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Turn your notes into a personal tutor.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: kTextSecondary, fontSize: 13),
+                      ),
+                      const SizedBox(height: 28),
+                      Container(
+                        padding: const EdgeInsets.all(22),
+                        decoration: BoxDecoration(
+                          color: kSurface,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: kDivider),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x8C000000),
+                              blurRadius: 18,
+                              offset: Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _fieldLabel('Email'),
+                            TextField(
+                              controller: _emailController,
+                              decoration:
+                                  const InputDecoration(hintText: 'you@school.edu'),
+                              keyboardType: TextInputType.emailAddress,
+                            ),
+                            const SizedBox(height: 14),
+                            _fieldLabel('Password'),
+                            TextField(
+                              controller: _passwordController,
+                              decoration:
+                                  const InputDecoration(hintText: '••••••••'),
+                              obscureText: true,
+                              onSubmitted: (_) => _submit(),
+                            ),
+                            const SizedBox(height: 20),
+                            _loading
+                                ? const Center(child: CircularProgressIndicator())
+                                : SizedBox(
+                                    height: 44,
+                                    child: ElevatedButton(
+                                      onPressed: _submit,
+                                      child: Text(
+                                          _isSignUp ? 'Create account' : 'Sign in'),
+                                    ),
+                                  ),
+                            const SizedBox(height: 6),
+                            Center(
+                              child: TextButton(
+                                onPressed: () =>
+                                    setState(() => _isSignUp = !_isSignUp),
+                                child: Text(
+                                  _isSignUp
+                                      ? 'Already have an account? Sign in'
+                                      : 'New here? Create an account',
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
+
+  Widget _fieldLabel(String text) => Padding(
+        padding: const EdgeInsets.only(bottom: 5),
+        child: Text(text,
+            style: const TextStyle(fontSize: 12, color: kTextSecondary)),
+      );
 }
 
 class RootShell extends StatefulWidget {

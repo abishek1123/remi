@@ -155,33 +155,42 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   Widget _sourceBadge(String source) {
+    // "From your notes" = green (grounded); "Related" = blurple accent.
     final isNotes = source == 'notes';
-    final color = isNotes ? Colors.green : const Color(0xFF4A90D9);
-    final label = isNotes ? 'From your notes' : 'Related';
-    final icon = isNotes ? Icons.description_outlined : Icons.public;
+    if (isNotes) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: kSuccessBg,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle_outline, size: 12, color: kSuccess),
+            SizedBox(width: 4),
+            Text('From your notes',
+                style: TextStyle(color: kSuccess, fontSize: 11)),
+          ],
+        ),
+      );
+    }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
+        color: kAccent800,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12, color: color),
-          const SizedBox(width: 4),
-          Text(label, style: TextStyle(color: color, fontSize: 11)),
-        ],
-      ),
+      child: const Text('Related',
+          style: TextStyle(color: kAccent200, fontSize: 11)),
     );
   }
 
   Color _optionColor(int i) {
     if (!_answered) return kSurface;
     final q = _questions[_index];
-    if (i == q.correctIndex) return const Color(0xFF1B5E20); // green = correct
-    if (i == _selected) return const Color(0xFF5E1B1B); // red = your wrong pick
+    if (i == q.correctIndex) return kSuccessBg;
+    if (i == _selected) return kDangerBg;
     return kSurface;
   }
 
@@ -274,33 +283,66 @@ class _QuizScreenState extends State<QuizScreen> {
                   fontSize: 20, fontWeight: FontWeight.w700, height: 1.3)),
           const SizedBox(height: 20),
           ...List.generate(q.options.length, (i) {
+            final isCorrect = _answered && i == q.correctIndex;
+            final isWrongPick =
+                _answered && i == _selected && i != q.correctIndex;
+            final borderColor = isCorrect
+                ? kSuccess
+                : isWrongPick
+                    ? kDanger
+                    : kSurfaceLight;
+            // unchosen options dim after answering
+            final dim = _answered && !isCorrect && !isWrongPick;
+            final markerColor = isCorrect
+                ? kSuccess
+                : isWrongPick
+                    ? kDanger
+                    : kTextSecondary;
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: GestureDetector(
-                onTap: () => _selectOption(i),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: _optionColor(i),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: (_answered && i == q.correctIndex)
-                          ? Colors.green
-                          : (_answered && i == _selected)
-                              ? kRed
-                              : kSurfaceLight,
+              child: Opacity(
+                opacity: dim ? 0.5 : 1,
+                child: GestureDetector(
+                  onTap: () => _selectOption(i),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: _optionColor(i),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: borderColor, width: 1.5),
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(child: Text(q.options[i])),
-                      if (_answered && i == q.correctIndex)
-                        const Icon(Icons.check_circle,
-                            color: Colors.green, size: 20),
-                      if (_answered && i == _selected && i != q.correctIndex)
-                        const Icon(Icons.cancel, color: kRed, size: 20),
-                    ],
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 24,
+                          height: 24,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: markerColor, width: 1.5),
+                          ),
+                          child: isCorrect
+                              ? const Icon(Icons.check,
+                                  size: 14, color: kSuccess)
+                              : isWrongPick
+                                  ? const Icon(Icons.close,
+                                      size: 14, color: kDanger)
+                                  : Text(
+                                      String.fromCharCode(65 + i), // A,B,C,D
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          color: kTextSecondary,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(q.options[i],
+                              style: const TextStyle(height: 1.35)),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -346,22 +388,64 @@ class _QuizScreenState extends State<QuizScreen> {
   Widget _buildResults() {
     final total = _questions.length;
     final pct = total == 0 ? 0 : (_score / total * 100).round();
+    final ringColor = pct >= 80
+        ? kSuccess
+        : pct >= 50
+            ? kWarning
+            : kDanger;
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('$_score / $total',
-                style: const TextStyle(
-                    fontSize: 48, fontWeight: FontWeight.w900, color: kRed)),
-            const SizedBox(height: 8),
-            Text('$pct% correct',
-                style: const TextStyle(color: kTextSecondary, fontSize: 18)),
-            const SizedBox(height: 32),
-            const Text('Questions per quiz',
-                style: TextStyle(color: kTextSecondary, fontSize: 13)),
-            const SizedBox(height: 8),
+            SizedBox(
+              width: 130,
+              height: 130,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 130,
+                    height: 130,
+                    child: CircularProgressIndicator(
+                      value: total == 0 ? 0 : _score / total,
+                      strokeWidth: 9,
+                      backgroundColor: kSurfaceLight,
+                      valueColor: AlwaysStoppedAnimation(ringColor),
+                    ),
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('$_score/$total',
+                          style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w700,
+                              color: kTextPrimary)),
+                      const Text('correct',
+                          style:
+                              TextStyle(fontSize: 12, color: kTextSecondary)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text('Nice work.',
+                style: TextStyle(fontSize: 23, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 4),
+            Text('$pct% this round — keep the weak topics coming.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: kTextSecondary, fontSize: 13)),
+            const SizedBox(height: 28),
+            const Text('NEXT QUIZ LENGTH',
+                style: TextStyle(
+                    color: kTextSecondary,
+                    fontSize: 11,
+                    letterSpacing: 1.2,
+                    fontWeight: FontWeight.w600)),
+            const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               alignment: WrapAlignment.center,
@@ -373,16 +457,16 @@ class _QuizScreenState extends State<QuizScreen> {
                   onSelected: (_) => setState(() => _numQuestions = count),
                   showCheckmark: false,
                   backgroundColor: kSurface,
-                  selectedColor: kRed,
+                  selectedColor: kAccent,
                   labelStyle: TextStyle(
-                    color: selected ? Colors.white : kTextSecondary,
+                    color: selected ? const Color(0xFF151327) : kTextSecondary,
                     fontWeight: FontWeight.w600,
                   ),
-                  side: BorderSide(color: selected ? kRed : kSurfaceLight),
+                  side: BorderSide(color: selected ? kAccent : kSurfaceLight),
                 );
               }).toList(),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
