@@ -7,6 +7,7 @@ import 'theme.dart';
 import 'tts_service.dart';
 import 'quiz_screen.dart';
 import 'text_utils.dart';
+import 'api.dart';
 
 class QaMessage {
   final String role; // 'user' or 'assistant'
@@ -98,7 +99,7 @@ class _DocumentQaScreenState extends State<DocumentQaScreen> {
     try {
       final response = await http.post(
         Uri.parse('https://web-production-3f04d.up.railway.app/ask-document'),
-        headers: {'Content-Type': 'application/json'},
+        headers: jsonAuthHeaders(),
         body: jsonEncode({
           'question': question,
           'user_id': userId,

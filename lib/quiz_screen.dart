@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'theme.dart';
 import 'learning_graph_screen.dart';
+import 'api.dart';
 
 class QuizQuestion {
   final String question;
@@ -81,7 +82,7 @@ class _QuizScreenState extends State<QuizScreen> {
     try {
       final response = await http.post(
         Uri.parse('https://web-production-3f04d.up.railway.app/generate-quiz'),
-        headers: {'Content-Type': 'application/json'},
+        headers: jsonAuthHeaders(),
         body: jsonEncode({
           'user_id': userId,
           'document_id': widget.documentId,

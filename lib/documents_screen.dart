@@ -6,6 +6,7 @@ import 'document_qa_screen.dart';
 import 'quiz_screen.dart';
 import 'main.dart' show logout;
 import 'theme.dart';
+import 'api.dart';
 
 class DocumentsScreen extends StatefulWidget {
   const DocumentsScreen({super.key});
@@ -66,7 +67,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       final uri = Uri.parse(
           'https://web-production-3f04d.up.railway.app/upload-document');
       final request = http.MultipartRequest('POST', uri);
-      request.fields['user_id'] = userId;
+      request.headers.addAll(authHeader());
       request.files.add(
         http.MultipartFile.fromBytes(
           'file',

@@ -9,6 +9,7 @@ import 'theme.dart';
 import 'tts_service.dart';
 import 'voice_settings.dart';
 import 'text_utils.dart';
+import 'api.dart';
 
 class ChatMessage {
   final String role;
@@ -150,7 +151,7 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       final response = await http.post(
         Uri.parse('https://web-production-3f04d.up.railway.app/assistant'),
-        headers: {'Content-Type': 'application/json'},
+        headers: jsonAuthHeaders(),
         body: jsonEncode({
           'messages': _messages
               .map((m) => {'role': m.role, 'content': m.content})

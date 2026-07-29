@@ -11,6 +11,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'documents_screen.dart';
 import 'learning_graph_screen.dart';
 import 'theme.dart';
+import 'api.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -362,11 +363,8 @@ class TasksTabState extends State<TasksTab> {
     try {
       final response = await http.post(
         Uri.parse('https://web-production-3f04d.up.railway.app/parse-input'),
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': userId,
-        },
-        body: jsonEncode({'text': text, 'user_id': userId}),
+        headers: jsonAuthHeaders(),
+        body: jsonEncode({'text': text}),
       );
 
       if (response.statusCode != 200) {
