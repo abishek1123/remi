@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -9,6 +8,7 @@ import 'main.dart' show logout;
 import 'theme.dart';
 import 'tts_service.dart';
 import 'voice_settings.dart';
+import 'text_utils.dart';
 
 class ChatMessage {
   final String role;
@@ -42,21 +42,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
   static const _defaultGreeting = 'Hi, what do you need?';
   String _greeting = _defaultGreeting;
-  bool _voiceOn = true;
 
   @override
   void initState() {
     super.initState();
     _initSpeech();
     _loadGreeting();
-    _tts.init().then((_) {
-      if (mounted) setState(() => _voiceOn = _tts.enabled);
-    });
-  }
-
-  Future<void> _toggleVoice() async {
-    await _tts.setEnabled(!_voiceOn);
-    setState(() => _voiceOn = _tts.enabled);
   }
 
   Future<void> _loadGreeting() async {
@@ -64,11 +55,6 @@ class _ChatScreenState extends State<ChatScreen> {
     final saved = prefs.getString('greeting_phrase');
     if (saved != null && saved.trim().isNotEmpty) {
       setState(() => _greeting = saved);
-    }
-    // Browsers block audio before the user interacts with the page,
-    // so only speak the greeting on non-web platforms.
-    if (!kIsWeb) {
-      await _tts.speak(_greeting);
     }
   }
 
@@ -178,17 +164,15 @@ class _ChatScreenState extends State<ChatScreen> {
       }
 
       final data = jsonDecode(response.body);
-      final reply = data['reply'] as String;
+      final reply = cleanReply(data['reply'] as String);
       setState(() {
         _messages.add(ChatMessage(role: 'assistant', content: reply));
       });
-      await _tts.speak(reply);
     } catch (e) {
       const reply = "Sorry, I couldn't respond right now.";
       setState(() {
         _messages.add(ChatMessage(role: 'assistant', content: reply));
       });
-      await _tts.speak(reply);
     } finally {
       setState(() => _sending = false);
     }
@@ -254,29 +238,16 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PERSONAL AGENT',
+        title: const Text('REMI',
             style: TextStyle(
               color: kRed,
               fontWeight: FontWeight.w900,
-              letterSpacing: 1.5,
-              fontSize: 20,
+              letterSpacing: 2,
+              fontSize: 22,
             )),
         actions: [
           IconButton(
-            onPressed: _toggleVoice,
-            icon: Icon(
-              _voiceOn ? Icons.volume_up : Icons.volume_off,
-              color: _voiceOn ? null : kRed,
-            ),
-            tooltip: _voiceOn ? 'Mute voice' : 'Unmute voice',
-          ),
-          IconButton(
-            onPressed: () async {
-              await showVoiceSettings(context);
-              if (mounted) {
-                setState(() => _voiceOn = _tts.enabled);
-              }
-            },
+            onPressed: () => showVoiceSettings(context),
             icon: const Icon(Icons.record_voice_over_outlined),
             tooltip: 'Voice settings',
           ),
@@ -297,27 +268,39 @@ class _ChatScreenState extends State<ChatScreen> {
                     itemBuilder: (context, index) {
                       final msg = _messages[index];
                       final isUser = msg.role == 'user';
-                      return Align(
-                        alignment: isUser
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 10),
-                          constraints: BoxConstraints(
-                            maxWidth:
-                                MediaQuery.of(context).size.width * 0.75,
+                      return Column(
+                        crossAxisAlignment: isUser
+                            ? CrossAxisAlignment.end
+                            : CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(top: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
+                            constraints: BoxConstraints(
+                              maxWidth:
+                                  MediaQuery.of(context).size.width * 0.75,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isUser ? kRed : kSurface,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Text(
+                              msg.content,
+                              style: const TextStyle(color: kTextPrimary),
+                            ),
                           ),
-                          decoration: BoxDecoration(
-                            color: isUser ? kRed : kSurface,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            msg.content,
-                            style: const TextStyle(color: kTextPrimary),
-                          ),
-                        ),
+                          if (!isUser)
+                            InkWell(
+                              onTap: () => _tts.speak(msg.content),
+                              borderRadius: BorderRadius.circular(20),
+                              child: const Padding(
+                                padding: EdgeInsets.all(6),
+                                child: Icon(Icons.volume_up_outlined,
+                                    size: 18, color: kTextSecondary),
+                              ),
+                            ),
+                        ],
                       );
                     },
                   ),

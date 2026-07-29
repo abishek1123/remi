@@ -81,7 +81,7 @@ class _QuizScreenState extends State<QuizScreen> {
         body: jsonEncode({
           'user_id': userId,
           'document_id': widget.documentId,
-          'num_questions': 5,
+          'num_questions': 10,
         }),
       );
 

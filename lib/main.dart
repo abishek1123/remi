@@ -11,7 +11,6 @@ import 'package:table_calendar/table_calendar.dart';
 import 'documents_screen.dart';
 import 'learning_graph_screen.dart';
 import 'theme.dart';
-import 'tts_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -132,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Text(
-                      'PERSONAL AGENT',
+                      'REMI',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: kRed,
@@ -284,7 +283,6 @@ class TasksTabState extends State<TasksTab> {
   bool _showCalendar = false;
 
   final stt.SpeechToText _speech = stt.SpeechToText();
-  final TtsService _tts = TtsService.instance;
   bool _isListening = false;
   bool _speechAvailable = false;
 
@@ -394,7 +392,11 @@ class TasksTabState extends State<TasksTab> {
       final reply = dueDate != null
           ? 'Added: $title, due $dueDate'
           : 'Added: $title';
-      await _tts.speak(reply);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(reply)),
+        );
+      }
     } catch (e) {
       debugPrint('Error adding task: $e');
       if (mounted) {
@@ -402,7 +404,6 @@ class TasksTabState extends State<TasksTab> {
           SnackBar(content: Text('Error: $e')),
         );
       }
-      await _tts.speak('Sorry, something went wrong adding that task.');
     } finally {
       if (mounted) setState(() => _loading = false);
     }

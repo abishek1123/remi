@@ -6,6 +6,7 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'theme.dart';
 import 'tts_service.dart';
 import 'quiz_screen.dart';
+import 'text_utils.dart';
 
 class QaMessage {
   final String role; // 'user' or 'assistant'
@@ -110,17 +111,15 @@ class _DocumentQaScreenState extends State<DocumentQaScreen> {
       }
 
       final data = jsonDecode(response.body);
-      final answer = data['answer'] as String;
+      final answer = cleanReply(data['answer'] as String);
       setState(() {
         _messages.add(QaMessage(role: 'assistant', content: answer));
       });
-      await _tts.speak(answer);
     } catch (e) {
       const reply = "Sorry, I couldn't answer that right now.";
       setState(() {
         _messages.add(QaMessage(role: 'assistant', content: reply));
       });
-      await _tts.speak(reply);
     } finally {
       setState(() => _asking = false);
     }
@@ -166,27 +165,39 @@ class _DocumentQaScreenState extends State<DocumentQaScreen> {
                     itemBuilder: (context, index) {
                       final msg = _messages[index];
                       final isUser = msg.role == 'user';
-                      return Align(
-                        alignment: isUser
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 10),
-                          constraints: BoxConstraints(
-                            maxWidth:
-                                MediaQuery.of(context).size.width * 0.75,
+                      return Column(
+                        crossAxisAlignment: isUser
+                            ? CrossAxisAlignment.end
+                            : CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(top: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
+                            constraints: BoxConstraints(
+                              maxWidth:
+                                  MediaQuery.of(context).size.width * 0.75,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isUser ? kRed : kSurface,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Text(
+                              msg.content,
+                              style: const TextStyle(color: kTextPrimary),
+                            ),
                           ),
-                          decoration: BoxDecoration(
-                            color: isUser ? kRed : kSurface,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            msg.content,
-                            style: const TextStyle(color: kTextPrimary),
-                          ),
-                        ),
+                          if (!isUser)
+                            InkWell(
+                              onTap: () => _tts.speak(msg.content),
+                              borderRadius: BorderRadius.circular(20),
+                              child: const Padding(
+                                padding: EdgeInsets.all(6),
+                                child: Icon(Icons.volume_up_outlined,
+                                    size: 18, color: kTextSecondary),
+                              ),
+                            ),
+                        ],
                       );
                     },
                   ),

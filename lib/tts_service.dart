@@ -15,7 +15,6 @@ class TtsService {
   String? voiceLocale;
   double rate = 1.0; // 1.0 = normal; up to 3.0 for faster speech
   double pitch = 1.0; // 0.5-2.0
-  bool enabled = true;
 
   Future<void> init() async {
     if (_initialized) return;
@@ -26,15 +25,7 @@ class TtsService {
     voiceLocale = prefs.getString('tts_voice_locale');
     rate = prefs.getDouble('tts_rate') ?? 1.0;
     pitch = prefs.getDouble('tts_pitch') ?? 1.0;
-    enabled = prefs.getBool('tts_enabled') ?? true;
     await _apply();
-  }
-
-  Future<void> setEnabled(bool value) async {
-    enabled = value;
-    if (!value) await stop();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('tts_enabled', value);
   }
 
   Future<void> _apply() async {
@@ -94,7 +85,7 @@ class TtsService {
 
   Future<void> speak(String text) async {
     await init();
-    if (!enabled) return;
+    await _tts.stop(); // stop any in-progress playback before starting new
     await _tts.speak(text);
   }
 

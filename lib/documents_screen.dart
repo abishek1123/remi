@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'document_qa_screen.dart';
+import 'quiz_screen.dart';
 import 'main.dart' show logout;
 import 'theme.dart';
 
@@ -157,6 +158,17 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     );
   }
 
+  void _quizDocument(Map<String, dynamic> doc) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => QuizScreen(
+          documentId: doc['id'],
+          documentTitle: doc['title'] ?? 'Untitled',
+        ),
+      ),
+    );
+  }
+
   Widget _posterCard(Map<String, dynamic> doc) {
     final isReady = doc['status'] == 'ready';
     return GestureDetector(
@@ -281,11 +293,22 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                     style: const TextStyle(color: kTextSecondary),
                   ),
                   enabled: isReady,
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline,
-                        color: kTextSecondary),
-                    tooltip: 'Delete document',
-                    onPressed: () => _deleteDocument(doc),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (isReady)
+                        IconButton(
+                          icon: const Icon(Icons.quiz_outlined, color: kRed),
+                          tooltip: 'Quiz me on this',
+                          onPressed: () => _quizDocument(doc),
+                        ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline,
+                            color: kTextSecondary),
+                        tooltip: 'Delete document',
+                        onPressed: () => _deleteDocument(doc),
+                      ),
+                    ],
                   ),
                   onTap: isReady ? () => _openDocument(doc) : null,
                 ),

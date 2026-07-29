@@ -32,7 +32,6 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
   late String? _selectedName;
   late double _rate;
   late double _pitch;
-  late bool _enabled;
 
   @override
   void initState() {
@@ -41,7 +40,6 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
     _selectedName = tts.voiceName;
     _rate = tts.rate;
     _pitch = tts.pitch;
-    _enabled = tts.enabled;
   }
 
   Map<String, String>? get _selectedVoice {
@@ -53,7 +51,6 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
 
   Future<void> _test() async {
     final tts = TtsService.instance;
-    await tts.setEnabled(true);
     await tts.saveSettings(
       name: _selectedVoice?['name'],
       locale: _selectedVoice?['locale'],
@@ -61,12 +58,10 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
       newPitch: _pitch,
     );
     await tts.speak('Hi! This is how I sound now.');
-    await tts.setEnabled(_enabled);
   }
 
   Future<void> _save() async {
     final tts = TtsService.instance;
-    await tts.setEnabled(_enabled);
     await tts.saveSettings(
       name: _selectedVoice?['name'],
       locale: _selectedVoice?['locale'],
@@ -93,19 +88,12 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
             'Voice Settings',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
           ),
-          const SizedBox(height: 8),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Voice replies'),
-            subtitle: const Text(
-              'Read answers out loud',
-              style: TextStyle(color: kTextSecondary, fontSize: 12),
-            ),
-            activeThumbColor: kRed,
-            value: _enabled,
-            onChanged: (v) => setState(() => _enabled = v),
+          const SizedBox(height: 4),
+          const Text(
+            'Tap the speaker on any reply to hear it.',
+            style: TextStyle(color: kTextSecondary, fontSize: 12),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           if (widget.voices.isEmpty)
             const Text(
               'No voices available on this device.',
