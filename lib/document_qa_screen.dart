@@ -12,7 +12,8 @@ import 'api.dart';
 class QaMessage {
   final String role; // 'user' or 'assistant'
   final String content;
-  QaMessage({required this.role, required this.content});
+  final bool fromDocument; // grounded answer (has sources)
+  QaMessage({required this.role, required this.content, this.fromDocument = false});
 }
 
 class DocumentQaScreen extends StatefulWidget {
@@ -113,8 +114,13 @@ class _DocumentQaScreenState extends State<DocumentQaScreen> {
 
       final data = jsonDecode(response.body);
       final answer = cleanReply(data['answer'] as String);
+      final sources = (data['sources'] as List?) ?? const [];
       setState(() {
-        _messages.add(QaMessage(role: 'assistant', content: answer));
+        _messages.add(QaMessage(
+          role: 'assistant',
+          content: answer,
+          fromDocument: sources.isNotEmpty,
+        ));
       });
     } catch (e) {
       const reply = "Sorry, I couldn't answer that right now.";
@@ -189,14 +195,32 @@ class _DocumentQaScreenState extends State<DocumentQaScreen> {
                             ),
                           ),
                           if (!isUser)
-                            InkWell(
-                              onTap: () => _tts.speak(msg.content),
-                              borderRadius: BorderRadius.circular(20),
-                              child: const Padding(
-                                padding: EdgeInsets.all(6),
-                                child: Icon(Icons.volume_up_outlined,
-                                    size: 18, color: kTextSecondary),
-                              ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                InkWell(
+                                  onTap: () => _tts.speak(msg.content),
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(6),
+                                    child: Icon(Icons.volume_up_outlined,
+                                        size: 18, color: kTextSecondary),
+                                  ),
+                                ),
+                                if (msg.fromDocument)
+                                  const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.verified_outlined,
+                                          size: 13, color: Colors.green),
+                                      SizedBox(width: 4),
+                                      Text('From your document',
+                                          style: TextStyle(
+                                              fontSize: 11,
+                                              color: kTextSecondary)),
+                                    ],
+                                  ),
+                              ],
                             ),
                         ],
                       );
