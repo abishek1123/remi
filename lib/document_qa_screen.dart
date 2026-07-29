@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'theme.dart';
 import 'tts_service.dart';
+import 'quiz_screen.dart';
 
 class QaMessage {
   final String role; // 'user' or 'assistant'
@@ -128,7 +129,23 @@ class _DocumentQaScreenState extends State<DocumentQaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.documentTitle)),
+      appBar: AppBar(
+        title: Text(widget.documentTitle),
+        actions: [
+          IconButton(
+            tooltip: 'Quiz me on this',
+            icon: const Icon(Icons.quiz_outlined, color: kRed),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => QuizScreen(
+                  documentId: widget.documentId,
+                  documentTitle: widget.documentTitle,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Expanded(

@@ -9,6 +9,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:table_calendar/table_calendar.dart';
 import 'documents_screen.dart';
+import 'learning_graph_screen.dart';
 import 'theme.dart';
 import 'tts_service.dart';
 
@@ -194,6 +195,8 @@ class RootShell extends StatefulWidget {
 class _RootShellState extends State<RootShell> {
   int _index = 0;
   final GlobalKey<TasksTabState> _tasksKey = GlobalKey<TasksTabState>();
+  final GlobalKey<LearningGraphScreenState> _graphKey =
+      GlobalKey<LearningGraphScreenState>();
 
   @override
   void initState() {
@@ -224,6 +227,7 @@ class _RootShellState extends State<RootShell> {
           const ChatScreen(),
           TasksTab(key: _tasksKey),
           const DocumentsScreen(),
+          LearningGraphScreen(key: _graphKey),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -231,6 +235,7 @@ class _RootShellState extends State<RootShell> {
         onTap: (i) {
           setState(() => _index = i);
           if (i == 1) _tasksKey.currentState?.refresh();
+          if (i == 3) _graphKey.currentState?.refresh();
         },
         items: const [
           BottomNavigationBarItem(
@@ -244,6 +249,10 @@ class _RootShellState extends State<RootShell> {
           BottomNavigationBarItem(
             icon: Icon(Icons.folder_outlined),
             label: 'Documents',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.insights_outlined),
+            label: 'Progress',
           ),
         ],
       ),
